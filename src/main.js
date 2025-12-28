@@ -9,13 +9,43 @@ kaplay({
 
 
 loadRoot("./"); // A good idea for Itch.io publishing later
-loadSprite("sixupgrade", "sprites/sixupgrade.png");
-loadSprite("annoyingkid", "sprites/annoyingkid.png");
+loadSprite("sixUpgrade", "sprites/sixupgrade.png");
+loadSprite("annoyingKid", "sprites/annoyingkid.png");
 
 scene ("game", () => {
     var score = 0;
-    var numberOfSixUpgrades = 0;
-    var numberOfAnnoyingKidUpgrades = 0;
+    
+    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY) {
+        const upgrade = add([
+            sprite(upgradeName),
+            pos(upgradeX, upgradeY),
+            scale(0.2),
+            opacity(1),
+            area(),
+            anchor("center"),
+            upgradeName,
+        ]) //add the new upgrade onscreen
+        
+        onClick(upgradeName, () => {
+            if (score >= upgradeCost) {
+                score = score - upgradeCost;
+                numberOfUpgrades++;
+                upgradeCost += upgradeCost;
+            }
+        }) //buy a new upgrade on click
+
+        onUpdate (() => {
+            if (score < upgradeCost) {
+                upgrade.opacity = 0.5;
+            } else {
+                upgrade.opacity = 1;
+            }
+        }) //opacity for the onscreen upgrade indicating whether or not buying a new one is possible
+
+        loop(1, () => {
+            score += numberOfUpgrades * upgradeScoreBoost;
+        }) //increase score every second
+    }
 
     const scoreText = add([
         text("", {
@@ -29,62 +59,15 @@ scene ("game", () => {
     onUpdate(() => {
         scoreText.text = score.toFixed(4).replace(/\.?0+$/, "");
     })
+    
     var scoreIncreaseAmount = 1;
+    
     onClick(() => {
         score += scoreIncreaseAmount;
     })
-    const sixupgrade = add([
-        sprite("sixupgrade"),
-        pos(150, 120),
-        scale(0.2),
-        opacity(1),
-        area(),
-        anchor("center"),
-        "sixupgrade",
-    ])
-    const annoyingkidupgrade = add([
-        sprite("annoyingkid"),
-        pos(430, 120),
-        scale(0.2),
-        opacity(1),
-        area(),
-        anchor("center"),
-        "annoyingkidupgrade",
-    ])
 
-    onClick("sixupgrade", () => {
-        if (score >= 6) {
-            score = score - 6;
-            numberOfSixUpgrades++;
-        }
-    })
-
-    onClick("annoyingkidupgrade", () => {
-        if (score >= 7) {
-            score = score - 7;
-            numberOfAnnoyingKidUpgrades++;
-        }
-    })
-
-    loop(1, () => {
-        score += numberOfSixUpgrades * 0.167;
-        score += numberOfAnnoyingKidUpgrades * 0.67;
-    })
-
-    onUpdate (() => {
-        // debug.log(score);
-        if (score < 6) {
-            sixupgrade.opacity = 0.5;
-        } else {
-            sixupgrade.opacity = 1;
-        }
-        if (score < 7) {
-            annoyingkidupgrade.opacity = 0.5;
-        } else {
-            annoyingkidupgrade.opacity = 1;
-        }
-    })
-
+    newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 120);
+    newUpgrade("annoyingKid", 7, 0, 0.67, 430, 120);
 
 })
 

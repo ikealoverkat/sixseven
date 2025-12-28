@@ -11,10 +11,11 @@ kaplay({
 loadRoot("./"); // A good idea for Itch.io publishing later
 loadSprite("sixUpgrade", "sprites/sixupgrade.png");
 loadSprite("annoyingKid", "sprites/annoyingkid.png");
+loadSprite("sixSeven", "sprites/sixseven.png");
 
 scene ("game", () => {
     var score = 0;
-    
+
     function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY) {
         const upgrade = add([
             sprite(upgradeName),
@@ -52,18 +53,36 @@ scene ("game", () => {
             size: 48,
         }), 
         color(0,0,0),
-        pos(center()),
+        pos(640, 600),
         anchor("center"),
         "scoreText"
     ])
+
+    const sixSeven = add([
+        sprite("sixSeven"),
+        scale(0.25),
+        anchor("center"),
+        area(),
+        pos(center()),
+        rotate(0),
+        timer(),
+        animate(),
+    ])
+
     onUpdate(() => {
         scoreText.text = score.toFixed(4).replace(/\.?0+$/, "");
+        sixSeven.animate("angle", [0, 360], { 
+            duration: 67,
+            direction: "forward",
+            loop: true,
+        });
     })
     
     var scoreIncreaseAmount = 1;
     
     onClick(() => {
         score += scoreIncreaseAmount;
+        sixSeven.tween(vec2(0.3, 0.3), vec2(0.25, 0.25), 1, (value) => (sixSeven.scale = value), easings.easeOutElastic);
     })
 
     newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 120);

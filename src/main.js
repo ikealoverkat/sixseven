@@ -98,21 +98,6 @@ scene("menu", () => {
 scene ("game", () => {
     var score = 0;
 
-    // function hasSixSeven(numberToCheck, digitsToFind) {
-    //     const numString = String(numberToCheck);
-    //     const findString = String(digitsToFind);
-
-    //     for (const digit of findString) {
-    //         if (numString.includes(digit)) {
-    //             return true;
-    //         }
-    //     }
-    // }
-
-    // if (hasSixSeven(score, 67) = true) {
-    //     debug.log("wsg");
-    // }
-
     let hasSixSeven;
     let wobbling = false;
     let wobbleTime = 0;
@@ -159,14 +144,55 @@ scene ("game", () => {
         //         tweenPlaying = false;
         //     })
         // }
+    }) //67 wobble code
+
+    let randomSixSevenKidNumber;
+    let randomSixSevenKid;
+
+    onUpdate(() => {
+        randomSixSevenKidNumber = randi(4); 
     })
 
     onKeyPressRepeat("6", () => {
+        if (randomSixSevenKidNumber == 0) {
+            randomSixSevenKid = "sixSevenKid1"
+        } else if (randomSixSevenKidNumber == 1) {
+            randomSixSevenKid = "sixSevenKid2"
+        } else if (randomSixSevenKidNumber == 2) {
+            randomSixSevenKid = "sixSevenKid3"
+        }
 
+        add([
+            sprite(randomSixSevenKid),
+            scale(2),
+            anchor("center"),
+            pos(center()),
+            opacity(1),
+            lifespan(0, {
+                fade: 0.5
+            })
+        ])
     })
 
     onKeyPressRepeat("7", () => {
-        
+        if (randomSixSevenKidNumber == 0) {
+            randomSixSevenKid = "sixSevenKid1"
+        } else if (randomSixSevenKidNumber == 1) {
+            randomSixSevenKid = "sixSevenKid2"
+        } else if (randomSixSevenKidNumber == 2) {
+            randomSixSevenKid = "sixSevenKid3"
+        }
+
+        add([
+            sprite(randomSixSevenKid),
+            scale(2),
+            anchor("center"),
+            pos(center()),
+            opacity(1),
+            lifespan(0, {
+                fade: 0.5
+            })
+        ])
     })
     //6 7 kid jumpscares
 
@@ -302,8 +328,6 @@ scene ("game", () => {
         })
     }
     addLebron();
-
-
 
     const scoreText = add([
         text("", {

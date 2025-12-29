@@ -4,11 +4,17 @@ import "kaplay/global"; // uncomment if you want to use without the  prefix
 kaplay({
     width: 1280,
     height: 720,
+    background: [255, 255, 255],
 });
 
 
 
 loadRoot("./"); // A good idea for Itch.io publishing later
+
+loadSprite("67logo", "sprites/67logo.png");
+loadFont("nat29", "sprites/Handwritten_Nat29_Font.ttf");
+loadSprite("67popup", "sprites/67popup.png");
+
 loadSprite("sixUpgrade", "sprites/sixupgrade.png");
 loadSprite("annoyingKid", "sprites/annoyingkid.png"); //tihami
 loadSprite("sixSeven", "sprites/sixseven.png");
@@ -17,6 +23,73 @@ loadSprite("tralaleroTralala", "sprites/tralalero_tralala.png");
 loadSprite("annoyingKid2", "sprites/annoyingkid2.png"); //albert
 loadSprite("910seal", "sprites/9_10_seal.png");
 loadSprite("67lebron", "sprites/67lebron.png");
+loadSprite("67background", "sprites/67background2.png");
+
+scene("menu", () => {
+    add([
+        sprite("67background", {
+            tiled: true,
+            width: width(),
+            height: height(),
+        }),
+        pos(0,0),
+        opacity(0.67),
+    ])
+
+    const logo = add([
+        sprite("67logo"),
+        scale(0.5),
+        pos(640, 300),
+        anchor("center"),
+        area(),
+        animate(),
+        timer(),
+        "logo"
+    ])
+
+    const gameStartText = add([
+        text("click me to start game", {
+            size: 72,
+            font: "nat29",
+        }),
+        pos(620, 575),
+        anchor("center"),
+        area(),
+        rotate(0),
+        color(64, 28, 101), //dark purple color of the logo
+        "gameStartText"
+    ])
+
+    logo.animate("angle", [-2.5, 2.5], { duration: 1.5, loop: true, direction: "ping-pong", easing: easings.easeInOutSine});
+    
+    var randomPosX;
+    var randomPosY;
+
+    onUpdate(() => {
+        randomPosX = randi(41, 1067);
+        randomPosY = randi(21, 670);
+    })
+
+    logo.onClick(() => {
+        logo.tween(vec2(0.55, 0.55), vec2(0.5, 0.5), 1, (value) => (logo.scale = value), easings.easeOutElastic); //play nice animation
+        const sixsevenpopup = add([
+            sprite("67popup"),
+            scale(0.1),
+            pos(randomPosX, randomPosY),
+            opacity(1),
+            anchor("center"),
+            timer(),
+            lifespan(0.5, {
+                fade: 0.5,
+            })
+        ])
+        sixsevenpopup.tween(vec2(0.12, 0.12), vec2(0.1, 0.1), 0.5, (value) => (sixsevenpopup.scale = value), easings.easeOutElastic);
+    })
+
+    gameStartText.onClick(() => {
+        go("game");
+    })
+})
 
 scene ("game", () => {
     var score = 0;
@@ -66,6 +139,16 @@ scene ("game", () => {
         ]) //upgrade text
     
     }
+
+    add([
+        sprite("67background", {
+            tiled: true,
+            width: width(),
+            height: height(),
+        }),
+        pos(0,0),
+        opacity(0.4),
+    ])
 
     const lebron = add([
         sprite("67lebron"),
@@ -134,7 +217,7 @@ scene ("game", () => {
     ])
 
     const sixSeven = add([
-        sprite("sixSeven"),
+        sprite("67popup"),
         scale(0.25),
         anchor("center"),
         area(),
@@ -169,4 +252,4 @@ scene ("game", () => {
 
 })
 
-go("game");
+go("menu");

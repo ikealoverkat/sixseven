@@ -13,8 +13,9 @@ loadRoot("./"); // A good idea for Itch.io publishing later
 
 loadSprite("67logo", "sprites/67logo.png");
 loadFont("nat29", "sprites/Handwritten_Nat29_Font.ttf");
-// font colour: color(64, 28, 101) dark purple btw
+const darkpurple = [64, 28, 101]
 loadSprite("67popup", "sprites/67popup.png");
+loadSprite("textbox", "sprites/textbox.png");
 
 loadSprite("sixUpgrade", "sprites/sixupgrade.png");
 loadSprite("annoyingKid", "sprites/annoyingkid.png"); //tihami
@@ -94,6 +95,8 @@ scene("menu", () => {
         go("game");
     })
 })
+
+layers(["obj", "spawns"], "obj")
 
 scene ("game", () => {
     var score = 0;
@@ -368,13 +371,42 @@ scene ("game", () => {
         sixSeven.tween(vec2(sixSevenScale + 0.04, sixSevenScale + 0.03), vec2(sixSevenScale, sixSevenScale), 1, (value) => (sixSeven.scale = value), easings.easeOutElastic);
     })
 
+    const sixseventextbox = add([
+        sprite("textbox"),
+        anchor("center"),
+        pos(1045, 550),
+        area(),
+    ])
+
+    const sixseventext = add([
+        text("pro tip: press 6 or 7 on your keyboard to see what happens!", {
+            width: 300,
+            font: "nat29",
+            size: 48,
+        }),
+        anchor("center"),
+        color(darkpurple),
+        pos(1045, 550),
+        area(),
+        
+    ])
+    sixseventextbox.onClick(() => {
+        sixseventextbox.opacity = 0;
+        sixseventext.opacity = 0;
+    })
+
+    sixseventext.onClick (() => {
+        sixseventextbox.opacity = 0;
+        sixseventext.opacity = 0;
+    })
+
     newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 80);
     newUpgrade("annoyingKid", 7, 0, 0.67, 350, 80);
     newUpgrade("maxVerstappen", 16, 0, 3.3, 550, 80);
-    newUpgrade("tralaleroTralala", 67, 0, 67, 750, 80);
+    newUpgrade("tralaleroTralala", 67, 0, 16.7, 750, 80);
     newUpgrade("910seal", 910, 0, 21, 950, 80);
     newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 80);
 
 })
 
-go("menu");
+go("game");

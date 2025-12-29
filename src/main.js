@@ -13,6 +13,7 @@ loadRoot("./"); // A good idea for Itch.io publishing later
 
 loadSprite("67logo", "sprites/67logo.png");
 loadFont("nat29", "sprites/Handwritten_Nat29_Font.ttf");
+// font colour: color(64, 28, 101) dark purple btw
 loadSprite("67popup", "sprites/67popup.png");
 
 loadSprite("sixUpgrade", "sprites/sixupgrade.png");
@@ -94,11 +95,58 @@ scene("menu", () => {
 scene ("game", () => {
     var score = 0;
 
-    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY) {
+    // function hasSixSeven(numberToCheck, digitsToFind) {
+    //     const numString = String(numberToCheck);
+    //     const findString = String(digitsToFind);
+
+    //     for (const digit of findString) {
+    //         if (numString.includes(digit)) {
+    //             return true;
+    //         }
+    //     }
+    // }
+
+    // if (hasSixSeven(score, 67) = true) {
+    //     debug.log("wsg");
+    // }
+
+    let hasSixSeven;
+    let tweenPlaying = false;
+
+    onUpdate(() => {
+        let scoreString = score.toFixed(4);
+        hasSixSeven = scoreString.includes("67")
+        
+        if (hasSixSeven == true && tweenPlaying == false) {
+            tweenPlaying = true;
+
+            tween(
+                camRot(), -6, 0.5, 
+                (value) => camRot(value)
+            )
+            .then(() => {
+                debug.log("wsg");
+                return tween(
+                    camRot(), 70, 0.5,
+                    (value) => camRot(value))
+                })
+            .then(() => { 
+                debug.log("yo");
+                return tween(
+                    camRot(), 0, 0.5,
+                    (value) => camRot(value))
+                })
+            .then(() => { 
+                tweenPlaying = false;
+            })
+        }
+    })
+
+    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY, upgradeSpawn) {
         const upgrade = add([
             sprite(upgradeName),
             pos(upgradeX, upgradeY),
-            scale(0.14),
+            scale(0.12),
             opacity(1),
             area(),
             timer(),
@@ -118,6 +166,7 @@ scene ("game", () => {
 
         onUpdate (() => {
             upgradeText.text = "price:" + upgradeCost.toString();
+            upgradeBoostAmountText.text = "+ " + upgradeScoreBoost.toString() + " per second";
             if (score < upgradeCost) {
                 upgrade.opacity = 0.5;
             } else {
@@ -131,97 +180,121 @@ scene ("game", () => {
         
         const upgradeText = add([
             text(" ", {
-                size: 24,
+                size: 30,
+                font: "nat29",
             }),
-            pos(upgradeX, upgradeY + 95),
+            pos(upgradeX, upgradeY + 145),
             anchor("center"),
-            color(0, 0, 0),
+            color(64, 28, 101)
         ]) //upgrade text
+
+        const upgradeBoostAmountText = add([
+            text(" ", {
+                size: 36,
+                width: 150,
+                lineSpacing: -15,
+                align: "center",
+                font: "nat29",
+            }),
+            pos(upgradeX, upgradeY + 105),
+            anchor("center"),
+            color(64, 28, 101)
+        ]) //score boost text
     
     }
 
-    add([
-        sprite("67background", {
-            tiled: true,
-            width: width(),
-            height: height(),
-        }),
-        pos(0,0),
-        opacity(0.4),
-    ])
+    function addLebron() {
+        add([
+            sprite("67background", {
+                tiled: true,
+                width: width(),
+                height: height(),
+            }),
+            pos(0,0),
+            opacity(0.4),
+        ])
 
-    const lebron = add([
-        sprite("67lebron"),
-        scale(0.75),
-        anchor("center"),
-        area(),
-        pos(160, 520),
-        opacity(1),
-        timer(),
-        animate(),
-    ])
+        const lebron = add([
+            sprite("67lebron"),
+            scale(0.75),
+            anchor("center"),
+            area(),
+            pos(160, 520),
+            opacity(1),
+            timer(),
+            animate(),
+        ])
 
-    var numberOfLebron = 0;
-    var lebronCost = 6767;
+        var numberOfLebron = 0;
+        var lebronCost = 6767;
+        var lebronScoreBoost = 67;
 
-    lebron.onClick(() => {
-        if (score >= lebronCost) {
-            score = score - lebronCost;
-            numberOfLebron++;
-            lebronCost += lebronCost;
-            lebron.tween(vec2(0.78, 0.78), vec2(0.75, 0.75), 0.5, (value) => (lebron.scale = value), easings.easeOutBounce); //play nice animation
-        }        
-    }) //buy a new upgrade on click
+        lebron.onClick(() => {
+            if (score >= lebronCost) {
+                score = score - lebronCost;
+                numberOfLebron++;
+                lebronCost += lebronCost;
+                lebron.tween(vec2(0.78, 0.78), vec2(0.75, 0.75), 0.5, (value) => (lebron.scale = value), easings.easeOutBounce); //play nice animation
+            }        
+        }) //buy a new upgrade on click
 
-    onUpdate (() => {
-        // upgradeText.text = "price:" + lebronCost.toString();
-        if (score < lebronCost) {
-            lebron.opacity = 0.5;
-        } else {
-            lebron.opacity = 1;
-        }
-    }) //opacity for the onscreen upgrade indicating whether or not buying a new one is possible
+        onUpdate (() => {
+            // upgradeText.text = "price:" + lebronCost.toString();
+            if (score < lebronCost) {
+                lebron.opacity = 0.5;
+            } else {
+                lebron.opacity = 1;
+            }
+        }) //opacity for the onscreen upgrade indicating whether or not buying a new lebron is possible
+        
+        add([
+            text("+" + lebronScoreBoost + " per click", {
+                size: 48,
+                font: "nat29",
+            }),
+            anchor("center"),
+            area(),
+            pos(160, 645),
+            color(64, 28, 101),
+        ])
 
-    onClick(() => {
-        score += 6.7 * numberOfLebron;
-    })
+        add([
+            text("price:" + lebronCost, {
+                size: 36,
+                font: "nat29",
+            }),
+            anchor("center"),
+            area(),
+            pos(160, 675),
+            color(64, 28, 101),
+        ])
 
-    add([
-        text("+6.7 per click", {
-            size: 24,
-        }),
-        anchor("center"),
-        area(),
-        pos(160, 645),
-        color(0, 0, 0),
-    ])
+        onClick(() => {
+            scoreIncreaseAmount += lebronScoreBoost * numberOfLebron;
+        })
+    }
+    addLebron();
 
-    add([
-        text("price:" + lebronCost, {
-            size: 24,
-        }),
-        anchor("center"),
-        area(),
-        pos(160, 675),
-        color(0, 0, 0),
-    ])
+
 
     const scoreText = add([
         text("", {
-            size: 48,
+            size: 96,
+            font: "nat29",
         }), 
-        color(0,0,0),
-        pos(640, 600),
+        color(64, 28, 101),
+        pos(640, 641),
         anchor("center"),
         "scoreText"
     ])
 
+    const sixSevenScale = 0.22;
     const sixSeven = add([
         sprite("67popup"),
-        scale(0.25),
+        scale(sixSevenScale),
         anchor("center"),
         area(),
-        pos(center()),
+        pos(640, 410),
         rotate(0),
         timer(),
         animate(),
@@ -240,15 +313,15 @@ scene ("game", () => {
     
     onClick(() => {
         score += scoreIncreaseAmount;
-        sixSeven.tween(vec2(0.3, 0.3), vec2(0.25, 0.25), 1, (value) => (sixSeven.scale = value), easings.easeOutElastic);
+        sixSeven.tween(vec2(sixSevenScale + 0.04, sixSevenScale + 0.03), vec2(sixSevenScale, sixSevenScale), 1, (value) => (sixSeven.scale = value), easings.easeOutElastic);
     })
 
-    newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 100);
-    newUpgrade("annoyingKid", 7, 0, 0.67, 350, 100);
-    newUpgrade("maxVerstappen", 16, 0, 0.67, 550, 100);
-    newUpgrade("tralaleroTralala", 67, 0, 67, 750, 100);
-    newUpgrade("910seal", 910, 0, 21, 950, 100);
-    newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 100);
+    newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 80);
+    newUpgrade("annoyingKid", 7, 0, 0.67, 350, 80);
+    newUpgrade("maxVerstappen", 16, 0, 0.67, 550, 80);
+    newUpgrade("tralaleroTralala", 67, 0, 67, 750, 80);
+    newUpgrade("910seal", 910, 0, 21, 950, 80);
+    newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 80);
 
 })
 

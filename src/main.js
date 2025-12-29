@@ -24,7 +24,9 @@ loadSprite("maxVerstappen", "sprites/maxverstappen.png");
 loadSprite("tralaleroTralala", "sprites/tralalero_tralala.png");
 loadSprite("annoyingKid2", "sprites/annoyingkid2.png"); //albert
 loadSprite("910seal", "sprites/9_10_seal.png");
-loadSprite("67lebron", "sprites/67lebron.png");
+loadSprite("67lebron", "sprites/67lebron.png", () => {
+    const tex = getSprite("67lebron").data.tex;
+});
 loadSprite("67background", "sprites/67background2.png");
 loadSprite("sixSevenKid1", "sprites/sixsevenkid1.webp");
 loadSprite("sixSevenKid2", "sprites/sixsevenkid2.jpg");
@@ -96,10 +98,10 @@ scene("menu", () => {
     })
 })
 
-layers(["obj", "spawns"], "obj")
+layers(["bg", "spawns", "obj"], "obj")
 
 scene ("game", () => {
-    var score = 0;
+    var score = 6767;
 
     let hasSixSeven;
     let wobbling = false;
@@ -164,6 +166,8 @@ scene ("game", () => {
         } else if (randomSixSevenKidNumber == 2) {
             randomSixSevenKid = "sixSevenKid3"
         }
+        sixseventextbox.opacity = 0;
+        sixseventext.opacity = 0;
 
         add([
             sprite(randomSixSevenKid),
@@ -199,7 +203,7 @@ scene ("game", () => {
     })
     //6 7 kid jumpscares
 
-    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY, upgradeSpawn) {
+    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY) {
         const upgrade = add([
             sprite(upgradeName),
             pos(upgradeX, upgradeY),
@@ -212,12 +216,28 @@ scene ("game", () => {
             upgradeName,
         ]) //add the new upgrade onscreen
         
+
         onClick(upgradeName, () => {
             if (score >= upgradeCost) {
                 score = score - upgradeCost;
                 numberOfUpgrades++;
                 upgradeCost += upgradeCost;
                 upgrade.tween(vec2(0.16, 0.16), vec2(0.14, 0.14), 0.5, (value) => (upgrade.scale = value), easings.easeOutBounce); //play nice animation
+                const upgradeSpawn = add([
+                    sprite(upgradeName),
+                    pos(randi(41, 1067), 675),
+                    anchor("center"),
+                    area(),
+                    timer(),
+                    animate(),
+                    scale(0.085),
+                    "upgradeSpawn",
+                    layer("spawns"),
+                ])
+                upgradeSpawn.tween(650, 675, 0.5, (value) => (upgradeSpawn.pos.y = value), easings.easeOutBounce);
+                loop(1, () => {
+                    upgradeSpawn.tween(675, 655, 0.3, (value) => (upgradeSpawn.pos.y = value), easings.easeOutCirc).then(() => { upgradeSpawn.tween(655, 675, 0.25, (value) => (upgradeSpawn.pos.y = value), easings.easeInCirc)})
+                })
             }        
         }) //buy a new upgrade on click
 
@@ -233,6 +253,7 @@ scene ("game", () => {
 
         loop(1, () => {
             score += numberOfUpgrades * upgradeScoreBoost;
+            // upgradeSpawn.tween(675, 675, 0.5, (value) => (upgradeSpawn.pos.y = value), easings.easeOutBounce);
         }) //increase score every second
         
         const upgradeText = add([
@@ -260,17 +281,19 @@ scene ("game", () => {
     
     }
 
-    function addLebron() {
-        add([
-            sprite("67background", {
-                tiled: true,
-                width: width(),
-                height: height(),
-            }),
-            pos(0,0),
-            opacity(0.4),
-        ])
+    add([
+        sprite("67background", {
+            tiled: true,
+            width: width(),
+            height: height(),
+        }),
+        pos(0,0),
+        opacity(0.4),
+        layer("bg"),
+    ])
 
+
+    function addLebron() {
         const lebron = add([
             sprite("67lebron"),
             scale(0.75),
@@ -296,7 +319,7 @@ scene ("game", () => {
         }) //buy a new upgrade on click
 
         onUpdate (() => {
-            // upgradeText.text = "price:" + lebronCost.toString();
+            lebronPriceText.text = "price:" + lebronCost.toString();
             if (score < lebronCost) {
                 lebron.opacity = 0.5;
             } else {
@@ -315,8 +338,8 @@ scene ("game", () => {
             color(64, 28, 101),
         ])
 
-        add([
-            text("price:" + lebronCost, {
+        const lebronPriceText = add([
+            text("", {
                 size: 36,
                 font: "nat29",
             }),
@@ -326,19 +349,45 @@ scene ("game", () => {
             color(64, 28, 101),
         ])
 
-        onClick(() => {
-            scoreIncreaseAmount += lebronScoreBoost * numberOfLebron;
+        function lebronParticleMaker(posX, posY) {
+            const lebronParticles = add([
+                pos(posX, posY),
+                scale(0.4),
+                particles({
+                    max: 6 * numberOfLebron,
+                    speed: [600, 700],
+                    lifeTime: [1, 1.5],
+                    opacities: [1.0, 0.0],
+                    texture: getSprite("67lebron").data.tex,
+                    quads: [getSprite("67lebron").data.frames[0]],
+                    angularVelocity: [0, 100],
+                    damping: [0, 10],
+                    acceleration: [vec2(100), vec2(0, -100)],
+                }, {
+                    rate: 5,
+                    direction: 90,
+                    spread: 50,
+                    lifetime: 0.5,
+                }),
+            ]);
+
+            lebronParticles.emit(numberOfLebron);
+        }
+
+        onMousePress(() => {
+            score += lebronScoreBoost * numberOfLebron;
+            lebronParticleMaker(mousePos().x, mousePos().y);
         })
     }
     addLebron();
 
     const scoreText = add([
         text("", {
-            size: 96,
+            size: 150,
             font: "nat29",
         }), 
         color(64, 28, 101),
-        pos(640, 641),
+        pos(860, 420),
         anchor("center"),
         "scoreText"
     ])
@@ -349,7 +398,7 @@ scene ("game", () => {
         scale(sixSevenScale),
         anchor("center"),
         area(),
-        pos(640, 410),
+        pos(500, 410),
         rotate(0),
         timer(),
         animate(),

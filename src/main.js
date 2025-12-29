@@ -25,6 +25,9 @@ loadSprite("annoyingKid2", "sprites/annoyingkid2.png"); //albert
 loadSprite("910seal", "sprites/9_10_seal.png");
 loadSprite("67lebron", "sprites/67lebron.png");
 loadSprite("67background", "sprites/67background2.png");
+loadSprite("sixSevenKid1", "sprites/sixsevenkid1.webp");
+loadSprite("sixSevenKid2", "sprites/sixsevenkid2.jpg");
+loadSprite("sixSevenKid3", "sprites/sixsevenkid3.jpg");
 
 scene("menu", () => {
     add([
@@ -111,36 +114,61 @@ scene ("game", () => {
     // }
 
     let hasSixSeven;
-    let tweenPlaying = false;
+    let wobbling = false;
+    let wobbleTime = 0;
 
     onUpdate(() => {
         let scoreString = score.toFixed(4);
         hasSixSeven = scoreString.includes("67")
         
-        if (hasSixSeven == true && tweenPlaying == false) {
-            tweenPlaying = true;
-
-            tween(
-                camRot(), -6, 0.5, 
-                (value) => camRot(value)
-            )
-            .then(() => {
-                debug.log("wsg");
-                return tween(
-                    camRot(), 70, 0.5,
-                    (value) => camRot(value))
-                })
-            .then(() => { 
-                debug.log("yo");
-                return tween(
-                    camRot(), 0, 0.5,
-                    (value) => camRot(value))
-                })
-            .then(() => { 
-                tweenPlaying = false;
-            })
+        if (hasSixSeven == true) {
+            wobbling = true;
+        } else {
+            wobbling = false;
+            wobbleTime = 0;
+            setCamRot(0);
+            setCamScale(1);
         }
+
+        if (wobbling) {
+            wobbleTime += dt();
+            setCamRot(Math.sin(wobbleTime*6) * 6);
+            // setCamScale(Math.sin(wobbleTime*6)*0. + 1);
+        }
+
+        // if (hasSixSeven == true && tweenPlaying == false) {
+        //     tweenPlaying = true;
+
+        //     tween(
+        //         camRot(), -6, 0.5, 
+        //         (value) => camRot(value)
+        //     )
+        //     .then(() => {
+        //         debug.log("wsg");
+        //         return tween(
+        //             camRot(), 70, 0.5,
+        //             (value) => camRot(value))
+        //         })
+        //     .then(() => { 
+        //         debug.log("yo");
+        //         return tween(
+        //             camRot(), 0, 0.5,
+        //             (value) => camRot(value))
+        //         })
+        //     .then(() => { 
+        //         tweenPlaying = false;
+        //     })
+        // }
     })
+
+    onKeyPressRepeat("6", () => {
+
+    })
+
+    onKeyPressRepeat("7", () => {
+        
+    })
+    //6 7 kid jumpscares
 
     function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY, upgradeSpawn) {
         const upgrade = add([
@@ -318,7 +346,7 @@ scene ("game", () => {
 
     newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 80);
     newUpgrade("annoyingKid", 7, 0, 0.67, 350, 80);
-    newUpgrade("maxVerstappen", 16, 0, 0.67, 550, 80);
+    newUpgrade("maxVerstappen", 16, 0, 3.3, 550, 80);
     newUpgrade("tralaleroTralala", 67, 0, 67, 750, 80);
     newUpgrade("910seal", 910, 0, 21, 950, 80);
     newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 80);

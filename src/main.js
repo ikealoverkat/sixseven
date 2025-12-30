@@ -30,7 +30,8 @@ loadSprite("sixSevenKid1", "sprites/sixsevenkid1.webp");
 loadSprite("sixSevenKid2", "sprites/sixsevenkid2.jpg");
 loadSprite("sixSevenKid3", "sprites/sixsevenkid3.jpg");
 loadSprite("feedCreatureSprite", "sprites/feedcreature.png");
-loadSprite("feedCreatureDisgustSprite", "sprites/feedcreature_disgust.png");
+loadSprite("feedCreatureSpriteDisgust", "sprites/feedcreature_disgust.png");
+loadSprite("null", "sprites/null.png")
 
 loadSound("diddyblud", "sounds/diddyblud.mp3");
 loadSound("pop", "sounds/pop.mp3");
@@ -40,9 +41,14 @@ loadSound("sixsevensound", "sounds/sixsevensound.mp3");
 loadSound("tralalerosound", "sounds/tralalerotralala.mp3");
 loadSound("vineboom", "sounds/vineboom.mp3");
 loadSound("1738", "sounds/1738.mp3");
+loadSound("wthelly", "sounds/wthelly.mp3");
+loadSound("OOOsfx", "sounds/OOOsfx.mp3");
+loadSound("playerVoice", "sounds/playerVoice.mp3");
+loadSound("creatureVoice", "sounds/creatureVoice.mp3");
 loadMusic("brainrotpiano", "sounds/brainrotpiano.mp3");
 
-layers(["bg", "spawns", "obj"], "obj")
+
+layers(["bg", "spawns", "obj", "ui"], "obj")
 
 const music = play("brainrotpiano", {
         paused: false,
@@ -523,6 +529,7 @@ scene ("game", () => {
     ])
 
     let eatingSixSeven = false;
+    var feedCreatureCaptionText = "click me vvv";
 
     onUpdate(() => {
             if (hasLebron && !eatingSixSeven) {
@@ -553,7 +560,7 @@ scene ("game", () => {
             ])
             feedCreature.tween(vec2(feedCreature.pos.x, feedCreature.pos.y + feedCreature.height/7), vec2(feedCreature.pos.x, feedCreature.pos.y), 1.5, (v) => (feedCreature.pos = v), easings.easeOutElastic);
             const feedCreatureCaption = add([
-                text("click me vvv", {
+                text(feedCreatureCaptionText, {
                     font: "nat29",
                     size: 48,
                     align: center,
@@ -569,13 +576,16 @@ scene ("game", () => {
                 feedCreatureCaption.tween(1, 0, 1, (v) => (feedCreatureCaption.opacity = v));
                 addDialogue();
             })
+            feedCreatureCaption.text = feedCreatureCaptionText;
         }
     })
 
+    let curDialogue = -1;
+    let isTalking = false;
     function addDialogue() {
         const characters = {
             "you": {
-                "sprite": null,
+                "sprite": "null",
                 "name": "you",
                 "sound": "playerVoice",
             },
@@ -585,7 +595,7 @@ scene ("game", () => {
                 "sound": "creatureVoice",
             },
             "feedCreatureDisgust": {
-                "sprite": "feedCreatureDisgustSprite",
+                "sprite": "feedCreatureSpriteDisgust",
                 "name": "Creature",
                 "sound": "creatureVoice",
             }            
@@ -594,13 +604,14 @@ scene ("game", () => {
         const dialogues = [
             ["feedCreatureDisgust", "feed me.", "shake"],
             ["you", "what the hell"],
-            ["feedCreature", "what the helly..? wthelly? wthelliantte, wthellheon, wthelly berry...?", "wthelly"],
+            ["feedCreature", "what the helly..? wthelly? wthelliantte, wthellheon, wthelly berry...?", "","wthelly"],
             ["you", "oh so ur brainrotted like the rest of this hell"],
             ["feedCreatureDisgust", "ts pmo icl sybau 😭 js feed me the 6 7 bro 😭✌️"],
-            ["you", "???"],
+            ["you", "??? what"],
             ["feedCreatureDisgust", "oh my gyat you dunce drag the 6 7 to me."],
             ["you", "damn dont talk to me like that you're literally a glutton 🥀"],
-            ["feedCreature", "...", "shake", "ooo"],
+            ["feedCreature", "........ go away :(", "shake", "ooo"],
+            ["you", " "],
         ];
         const effects = {
             "shake": () => {
@@ -608,26 +619,24 @@ scene ("game", () => {
             }
         }
         const sounds = {
-            "wthelly": () => {
-                play(placeholderWthelly);
-            },
-            "ooo": () => {
-                play(placeholderOOO);
-            }
+            "wthelly": "wthelly",
+            "ooo": "OOOsfx"
         };
-        let curDialogue = 0;
-        let isTalking = false;
+
         const feedTextbox = add([
             rect(width() - 250, 250, {radius: 6}),
             anchor("center"),
             pos(center().x, height() - 150),
-            outline(6, darkpurple),
+            outline(12, Color.fromHex("#401c65")),
+            layer("ui"),
+            "feedScene"
         ])
         const txt = add([
             text("", {
                 size: 64,
                 width: width() - 400,
                 align: "center",
+                font: "nat29",
                 color: Color.fromHex("#401c65"),
                 transform: (index, character) => {
                     return {
@@ -636,30 +645,51 @@ scene ("game", () => {
                 },
             }),
             pos(feedTextbox.pos),
+            color(darkpurple),
+            layer("ui"),
+            z(10),
             anchor("center"),
             {
                 letterCount: 0,
-            }
+            },
+            "feedScene"
         ]);
         const onscreenSprite = add([
             sprite("feedCreatureSpriteDisgust"),
-            scale(3),
+            scale(2),
             anchor("center"),
-            pos(480, 360)
+            pos(center().x, 360),
+            layer("ui"),
+            z(-10),
+            "feedScene"
         ])
-
+    
         onMouseDown(() => {
+            if (curDialogue >= 9) {
+                feedCreatureCaptionText = "feed me vvv";
+                endDialogue();
+                return;
+            }     
+            
             if (isTalking) return;
-            curDialogue = (curDialogue + 1) % dialogues.length;
-            updateDialogue();
+            if (curDialogue <= 9) {
+                curDialogue++;
+                updateDialogue();
+            }
         });
 
-        function updateDialogue() {
-            const [char, dialogue, eff] = dialogues[curDialogue];
+        function updateDialogue() {       
+            
+            const [char, dialogue, eff, sound] = dialogues[curDialogue];
             onscreenSprite.use(sprite(characters[char].sprite));
             startWriting(dialogue, char);
             if (eff) {
                 effects[eff]();
+            }
+            if (sound) {
+                play(sounds[sound], {
+                    volume: 0.3,
+                });
             }
         }
 
@@ -667,16 +697,15 @@ scene ("game", () => {
             isTalking = true;
             txt.letterCount = 0;
             txt.text = dialog;
-            const textLength = txt.formattedText().renderedText.length; //total textlength it needs to type out
-
-            const writing = loop(0.05, () => {
+            const textLength = txt.text.length; //total textlength it needs to type out
+            
+            const writing = loop(0.04, () => {
                 txt.letterCount = Math.min(
                     txt.letterCount + 1,
                     textLength,
                 );
-                play(characters[char].sound, {
-                    volume: 0.3,
-                });
+                play(characters[char].sound, { volume: 0.1 });
+
                 if (txt.letterCount == textLength) {
                     isTalking = false;
                     writing.cancel();
@@ -684,7 +713,17 @@ scene ("game", () => {
             })
         }
 
+        function endDialogue() {
+            stop("playerVoice");
+            stop("creatureVoice");
+            stop("wthelly");
+            stop("OOOsfx");
+            destroyAll("feedScene");
+            isTalking = true;
+            curDialogue = 9;
+        }
     };
+
 
 
     var scoreIncreaseAmount = 1;

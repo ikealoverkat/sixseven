@@ -33,6 +33,11 @@ loadSprite("feedCreatureSprite", "sprites/feedcreature.png");
 loadSprite("feedCreatureSpriteDisgust", "sprites/feedcreature_disgust.png");
 loadSprite("null", "sprites/null.png")
 loadSprite("purpleScreen", "sprites/purpleScreen.png");
+loadSprite("sixSevenCollisionNull", "sprites/sixSevenCollisionNull.png");
+
+loadSprite("feedCreature41", "sprites/feedcreature_41.png")
+loadSprite("41background", "sprites/41background.png")
+loadSprite("41popup", "sprites/41popup.png")
 
 loadSound("diddyblud", "sounds/diddyblud.mp3");
 loadSound("pop", "sounds/pop.mp3");
@@ -48,6 +53,16 @@ loadSound("playerVoice", "sounds/playerVoice.mp3");
 loadSound("creatureVoice", "sounds/creatureVoice.mp3");
 loadMusic("brainrotpiano", "sounds/brainrotpiano.mp3");
 
+loadShader(
+    "invert",
+    null,
+    `
+vec4 frag(vec2 pos, vec2 uv, vec4 color, sampler2D tex) {
+    vec4 c = def_frag();
+    return vec4(1.0 - c.rgb, c.a);
+}
+`,
+);
 
 layers(["bg", "spawns", "obj", "ui"], "obj")
 
@@ -123,7 +138,7 @@ scene("menu", () => {
     })
 })
 
-    var score = 6767;
+    var score = 0;
     let totalUpgradeScoreBoost = 0;
 
     let hasSixSeven;
@@ -152,30 +167,6 @@ scene ("game", () => {
             setCamRot(Math.sin(wobbleTime*6) * 6);
             // setCamScale(Math.sin(wobbleTime*6)*0. + 1);
         }
-
-        // if (hasSixSeven == true && tweenPlaying == false) {
-        //     tweenPlaying = true;
-
-        //     tween(
-        //         camRot(), -6, 0.5, 
-        //         (value) => camRot(value)
-        //     )
-        //     .then(() => {
-        //         debug.log("wsg");
-        //         return tween(
-        //             camRot(), 70, 0.5,
-        //             (value) => camRot(value))
-        //         })
-        //     .then(() => { 
-        //         debug.log("yo");
-        //         return tween(
-        //             camRot(), 0, 0.5,
-        //             (value) => camRot(value))
-        //         })
-        //     .then(() => { 
-        //         tweenPlaying = false;
-        //     })
-        // }
     }) //67 wobble code
 
     let randomSixSevenKidNumber;
@@ -317,7 +308,7 @@ scene ("game", () => {
     
     }
 
-    add([
+    const background = add([
         sprite("67background", {
             tiled: true,
             width: width(),
@@ -419,13 +410,6 @@ scene ("game", () => {
         })
     }
     addLebron();
-
-    if (hasLebron == true) {
-        //add player character
-        //make sixSeven draggable
-        //drag the sixSeven to the player
-        //unlock portal to 41 level
-    }
 
     const scoreText = add([
         text("", {
@@ -547,6 +531,7 @@ scene ("game", () => {
                 drag(),
                 "sixSeven"
             ])
+
             eatingSixSeven = true;    
             sixSeven.onDrag(() => {
                 readd(sixSeven);
@@ -558,7 +543,21 @@ scene ("game", () => {
                 pos(1050, 720),
                 timer(),
                 animate(),
+                "feedCreature"
             ])
+            const sixSevenBox = add([
+                rect(50, 50),
+                anchor("center"),
+                area(),
+                opacity(0),
+                pos(sixSeven.pos.x - 25, sixSeven.pos.y),
+                "sixSevenBox"
+            ])
+
+            sixSeven.onUpdate(() => {
+                sixSevenBox.pos = vec2(sixSeven.pos);                
+            })
+            
             feedCreature.tween(vec2(feedCreature.pos.x, feedCreature.pos.y + feedCreature.height/7), vec2(feedCreature.pos.x, feedCreature.pos.y), 1.5, (v) => (feedCreature.pos = v), easings.easeOutElastic);
             const feedCreatureCaption = add([
                 text(feedCreatureCaptionText, {
@@ -578,6 +577,46 @@ scene ("game", () => {
                 addDialogue();
             })
             feedCreatureCaption.text = feedCreatureCaptionText;
+            
+            onCollide("sixSevenBox", "feedCreature", () => {
+                play("pop");
+                play("vineboom");
+                feedCreature.sprite = "feedCreature41";
+                background.sprite = "41background";
+                destroy(sixSeven);
+
+                usePostEffect("invert");
+
+                const fourtyOne = add([
+                    sprite("41popup"),
+                    scale(sixSevenScale),
+                    anchor("center"),
+                    area(),
+                    pos(500, 410),
+                    rotate(0),
+                    timer(),
+                    animate(),                
+                    drag(),
+                    "fourtyOne"                    
+                ])
+
+                fourtyOne.animate("angle", [0, 360], { 
+                    duration: 41,
+                    direction: "forward",
+                    loop: true,
+                });                
+
+                onClick(() => {
+                    fourtyOne.tween(vec2(sixSevenScale + 0.04, sixSevenScale + 0.03), vec2(sixSevenScale, sixSevenScale), 1, (value) => (sixSeven.scale = value), easings.easeOutElastic);
+                })
+
+                wait(2.1, () => {
+                    feedCreature.tween(vec2(feedCreature.pos.x, feedCreature.pos.y), vec2(feedCreature.pos.x, feedCreature.pos.y + feedCreature.height / 2), 1.5, (v) => (feedCreature.pos = v), easings.easeInElastic)
+                    feedCreature.tween(1, 0, 1.7, (v) => (feedCreature.opacity = v));
+                })
+
+            }) 
+
         }
     })
 

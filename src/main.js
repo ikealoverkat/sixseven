@@ -32,6 +32,22 @@ loadSprite("sixSevenKid1", "sprites/sixsevenkid1.webp");
 loadSprite("sixSevenKid2", "sprites/sixsevenkid2.jpg");
 loadSprite("sixSevenKid3", "sprites/sixsevenkid3.jpg");
 
+loadSound("diddyblud", "sounds/diddyblud.mp3");
+loadSound("pop", "sounds/pop.mp3");
+loadSound("maxverstappensound", "sounds/maxverstappensound.mp3");
+loadSound("nineplusten", "sounds/nineplusten.mp3");
+loadSound("sixsevensound", "sounds/sixsevensound.mp3");
+loadSound("tralalerosound", "sounds/tralalerotralala.mp3");
+loadSound("vineboom", "sounds/vineboom.mp3");
+loadSound("1738", "sounds/1738.mp3");
+loadMusic("brainrotpiano", "sounds/brainrotpiano.mp3");
+
+layers(["bg", "spawns", "obj"], "obj")
+
+const music = play("brainrotpiano", {
+        paused: false,
+    });
+
 scene("menu", () => {
     add([
         sprite("67background", {
@@ -79,6 +95,7 @@ scene("menu", () => {
 
     logo.onClick(() => {
         logo.tween(vec2(0.55, 0.55), vec2(0.5, 0.5), 1, (value) => (logo.scale = value), easings.easeOutElastic); //play nice animation
+        play("pop");
         const sixsevenpopup = add([
             sprite("67popup"),
             scale(0.1),
@@ -94,21 +111,21 @@ scene("menu", () => {
     })
 
     gameStartText.onClick(() => {
+        play("sixsevensound");
         go("game");
     })
 })
 
-layers(["bg", "spawns", "obj"], "obj")
-
 scene ("game", () => {
-    var score = 6767;
+    music.paused = true;
+    var score = 0;
 
     let hasSixSeven;
     let wobbling = false;
     let wobbleTime = 0;
 
     onUpdate(() => {
-        let scoreString = score.toFixed(4);
+        let scoreString = score.toFixed();
         hasSixSeven = scoreString.includes("67")
         
         if (hasSixSeven == true) {
@@ -155,7 +172,7 @@ scene ("game", () => {
     let randomSixSevenKid;
 
     onUpdate(() => {
-        randomSixSevenKidNumber = randi(4); 
+        randomSixSevenKidNumber = randi(0, 3); 
     })
 
     onKeyPressRepeat("6", () => {
@@ -200,10 +217,13 @@ scene ("game", () => {
                 fade: 0.5
             })
         ])
+        play("sixsevensound");
     })
     //6 7 kid jumpscares
 
-    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY) {
+    let totalUpgradeScoreBoost = 0;
+
+    function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY, spawnSound) {
         const upgrade = add([
             sprite(upgradeName),
             pos(upgradeX, upgradeY),
@@ -234,15 +254,20 @@ scene ("game", () => {
                     "upgradeSpawn",
                     layer("spawns"),
                 ])
+                play(spawnSound);
+                totalUpgradeScoreBoost += upgradeScoreBoost;
                 upgradeSpawn.tween(650, 675, 0.5, (value) => (upgradeSpawn.pos.y = value), easings.easeOutBounce);
                 loop(1, () => {
                     upgradeSpawn.tween(675, 655, 0.3, (value) => (upgradeSpawn.pos.y = value), easings.easeOutCirc).then(() => { upgradeSpawn.tween(655, 675, 0.25, (value) => (upgradeSpawn.pos.y = value), easings.easeInCirc)})
+                    play("pop", {
+                        volume: 0.1
+                    });
                 })
             }        
         }) //buy a new upgrade on click
 
         onUpdate (() => {
-            upgradeText.text = "price:" + upgradeCost.toString();
+            upgradeText.text = "price:" + upgradeCost.toFixed();
             upgradeBoostAmountText.text = "+ " + upgradeScoreBoost.toString() + " per second";
             if (score < upgradeCost) {
                 upgrade.opacity = 0.5;
@@ -314,9 +339,10 @@ scene ("game", () => {
                 score = score - lebronCost;
                 numberOfLebron++;
                 lebronCost += lebronCost;
+                play("sixsevensound");
                 lebron.tween(vec2(0.78, 0.78), vec2(0.75, 0.75), 0.5, (value) => (lebron.scale = value), easings.easeOutBounce); //play nice animation
             }        
-        }) //buy a new upgrade on click
+        }) //buy a new lebron on click
 
         onUpdate (() => {
             lebronPriceText.text = "price:" + lebronCost.toString();
@@ -392,6 +418,31 @@ scene ("game", () => {
         "scoreText"
     ])
 
+    const perSecondText = add([
+        text("", {
+            size: 64,
+            font: "nat29",
+            width: 400,
+        }),
+        color(darkpurple),
+        pos(880, 500),
+        anchor("center"),
+        "perSecondText"
+    ])
+
+    onUpdate(() => {
+        scoreText.text = score.toFixed();
+        perSecondText.text = totalUpgradeScoreBoost.toFixed(3).replace(/\.?0+$/, "") + " per second";
+        
+        perSecondText.pos = vec2(scoreText.pos.x + perSecondText.text.length * 3, scoreText.pos.y + 100);
+        
+        sixSeven.animate("angle", [0, 360], { 
+            duration: 67,
+            direction: "forward",
+            loop: true,
+        });
+    })
+    
     const sixSevenScale = 0.22;
     const sixSeven = add([
         sprite("67popup"),
@@ -404,15 +455,6 @@ scene ("game", () => {
         animate(),
     ])
 
-    onUpdate(() => {
-        scoreText.text = score.toFixed(4).replace(/\.?0+$/, "");
-        sixSeven.animate("angle", [0, 360], { 
-            duration: 67,
-            direction: "forward",
-            loop: true,
-        });
-    })
-    
     var scoreIncreaseAmount = 1;
     
     onClick(() => {
@@ -442,6 +484,7 @@ scene ("game", () => {
     sixseventextbox.onClick(() => {
         sixseventextbox.opacity = 0;
         sixseventext.opacity = 0;
+        play("pop");
     })
 
     sixseventext.onClick (() => {
@@ -449,13 +492,13 @@ scene ("game", () => {
         sixseventext.opacity = 0;
     })
 
-    newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 80);
-    newUpgrade("annoyingKid", 7, 0, 0.67, 350, 80);
-    newUpgrade("maxVerstappen", 16, 0, 3.3, 550, 80);
-    newUpgrade("tralaleroTralala", 67, 0, 16.7, 750, 80);
-    newUpgrade("910seal", 910, 0, 21, 950, 80);
-    newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 80);
+    newUpgrade("sixUpgrade", 6, 0, 0.167, 150, 80, "vineboom");
+    newUpgrade("annoyingKid", 7, 0, 0.67, 350, 80, "diddyblud");
+    newUpgrade("maxVerstappen", 16, 0, 3.3, 550, 80, "maxverstappensound");
+    newUpgrade("tralaleroTralala", 67, 0, 16.7, 750, 80, "tralalerosound");
+    newUpgrade("910seal", 910, 0, 21, 950, 80, "nineplusten");
+    newUpgrade("annoyingKid2", 1738, 0, 167, 1150, 80, "1738");
 
 })
 
-go("game");
+go("menu");

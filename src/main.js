@@ -543,7 +543,38 @@ scene ("game", () => {
             sixSeven.onDrag(() => {
                 readd(sixSeven);
             })
+            const feedCreature = add([
+                rect(200, 250),
+                anchor("bot"),
+                area(),
+                pos(1050, 720),
+                color(darkpurple),
+                timer(),
+                animate(),
+            ])
+            feedCreature.tween(vec2(feedCreature.pos.x, feedCreature.pos.y + feedCreature.height/7), vec2(feedCreature.pos.x, feedCreature.pos.y), 1.5, (v) => (feedCreature.pos = v), easings.easeOutElastic);
+            const feedCreatureCaption = add([
+                text("click me vvv", {
+                    font: "nat29",
+                    size: 48,
+                    align: center,
+                }),
+                pos(feedCreature.pos.x, feedCreature.pos.y - 280),
+                anchor("center"),
+                opacity(),
+                timer(),
+                animate(),
+                color(darkpurple),
+            ])
+            feedCreature.onClick(() => {
+                feedCreatureCaption.tween(1, 0, 1, (v) => (feedCreatureCaption.opacity = v));
+                //placeholder function addDialogue();
+            })
         }
+    })
+
+    addDialogue(() => {
+        
     })
 
 

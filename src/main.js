@@ -116,13 +116,16 @@ scene("menu", () => {
     })
 })
 
-scene ("game", () => {
-    music.paused = true;
     var score = 0;
+    let totalUpgradeScoreBoost = 0;
 
     let hasSixSeven;
     let wobbling = false;
     let wobbleTime = 0;
+
+scene ("game", () => {
+    music.paused = true;
+
 
     onUpdate(() => {
         let scoreString = score.toFixed();
@@ -196,6 +199,8 @@ scene ("game", () => {
                 fade: 0.5
             })
         ])
+
+        play("sixsevensound");
     })
 
     onKeyPressRepeat("7", () => {
@@ -221,7 +226,6 @@ scene ("game", () => {
     })
     //6 7 kid jumpscares
 
-    let totalUpgradeScoreBoost = 0;
 
     function newUpgrade(upgradeName, upgradeCost, numberOfUpgrades, upgradeScoreBoost, upgradeX, upgradeY, spawnSound) {
         const upgrade = add([
@@ -317,6 +321,7 @@ scene ("game", () => {
         layer("bg"),
     ])
 
+    let hasLebron = false; 
 
     function addLebron() {
         const lebron = add([
@@ -338,6 +343,7 @@ scene ("game", () => {
             if (score >= lebronCost) {
                 score = score - lebronCost;
                 numberOfLebron++;
+                hasLebron = true;
                 lebronCost += lebronCost;
                 play("sixsevensound");
                 lebron.tween(vec2(0.78, 0.78), vec2(0.75, 0.75), 0.5, (value) => (lebron.scale = value), easings.easeOutBounce); //play nice animation
@@ -406,6 +412,13 @@ scene ("game", () => {
         })
     }
     addLebron();
+
+    if (hasLebron == true) {
+        //add player character
+        //make sixSeven draggable
+        //drag the sixSeven to the player
+        //unlock portal to 41 level
+    }
 
     const scoreText = add([
         text("", {

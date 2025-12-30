@@ -32,6 +32,7 @@ loadSprite("sixSevenKid3", "sprites/sixsevenkid3.jpg");
 loadSprite("feedCreatureSprite", "sprites/feedcreature.png");
 loadSprite("feedCreatureSpriteDisgust", "sprites/feedcreature_disgust.png");
 loadSprite("null", "sprites/null.png")
+loadSprite("purpleScreen", "sprites/purpleScreen.png");
 
 loadSound("diddyblud", "sounds/diddyblud.mp3");
 loadSound("pop", "sounds/pop.mp3");
@@ -583,6 +584,12 @@ scene ("game", () => {
     let curDialogue = -1;
     let isTalking = false;
     function addDialogue() {
+        add([
+            sprite("purpleScreen"),
+            pos(0,0),
+            "feedScene"
+        ])
+
         const characters = {
             "you": {
                 "sprite": "null",
@@ -723,8 +730,6 @@ scene ("game", () => {
             curDialogue = 9;
         }
     };
-
-
 
     var scoreIncreaseAmount = 1;
     

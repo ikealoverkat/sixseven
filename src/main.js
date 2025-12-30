@@ -116,7 +116,7 @@ scene("menu", () => {
     })
 })
 
-    var score = 0;
+    var score = 6767;
     let totalUpgradeScoreBoost = 0;
 
     let hasSixSeven;
@@ -456,8 +456,61 @@ scene ("game", () => {
         });
     })
     
+    //draggable obj code
+    let curDragging = null;
+    function drag() {
+        let offset = vec2(0); //dist between object pos and mouse pos
+        return {
+            id: "drag",
+            require: ["pos", "area"],
+            pick() {
+                curDragging = this;
+                offset = mousePos().sub(this.pos);
+                this.trigger("drag");
+            },
+            update() {
+                if (curDragging == this) {
+                    this.pos = mousePos().sub(offset);
+                    this.trigger("dragUpdate")
+                }
+            },
+            onDrag(action) {
+                return this.on("drag", action);
+            },
+            onDragUpdate(action) {
+                return this.on("dragUpdate", action); 
+            },
+            onDragEnd(action) {
+                return this.on("dragEnd", action)
+            }
+        }
+    }
+    onMousePress(() => { //check if an object is picked
+        if (curDragging) {
+            return;
+        }
+        //for all draggable objects
+        for (const obj of get("drag").reverse()) {
+            if (obj.isHovering()) {
+                obj.pick();
+                break;
+            }
+        }
+    })
+
+    onMouseRelease(() => {
+        if (curDragging) {
+            curDragging.trigger("dragEnd");
+            curDragging = null;
+        }
+    })
+    //drag code end
+
+    onUpdate(() => setCursor("default")); 
+
+
     const sixSevenScale = 0.22;
-    const sixSeven = add([
+    var sixSeven = add([
         sprite("67popup"),
         scale(sixSevenScale),
         anchor("center"),
@@ -466,7 +519,33 @@ scene ("game", () => {
         rotate(0),
         timer(),
         animate(),
+        "sixSeven"
     ])
+
+    let eatingSixSeven = false;
+
+    onUpdate(() => {
+            if (hasLebron && !eatingSixSeven) {
+            destroyAll("sixSeven");
+            sixSeven = add([
+                sprite("67popup"),
+                scale(sixSevenScale),
+                anchor("center"),
+                area(),
+                pos(500, 410),
+                rotate(0),
+                timer(),
+                animate(),                
+                drag(),
+                "sixSeven"
+            ])
+            eatingSixSeven = true;    
+            sixSeven.onDrag(() => {
+                readd(sixSeven);
+            })
+        }
+    })
+
 
     var scoreIncreaseAmount = 1;
     
